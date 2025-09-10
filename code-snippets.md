@@ -9,3 +9,24 @@ const toggleImportanceOf = id => {
   })
 }
 ```
+___
+`currentColor` keyword
+```html
+<div class="container">
+  The color of this text is blue.
+  <div class="child"></div>
+  This block is surrounded by a blue border.
+</div>
+
+<style>
+    .container {
+        color: blue;
+        border: 1px dashed currentColor;
+    }
+    .child {
+        background: currentColor;
+        height: 9px;
+    }
+</style>
+```
+___
