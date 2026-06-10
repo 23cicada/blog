@@ -114,3 +114,25 @@ try {
 ## Tips
 
 [use interface until you need to use features from type.](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#differences-between-type-aliases-and-interfaces)
+
+### Omit with unions
+
+An important point concerning unions is that, when you use them with Omit to exclude a property, it works in a possibly unexpected way. Suppose that we want to remove the id from each Entry. We could think of using
+```js
+export type Entry =
+  | HospitalEntry
+  | OccupationalHealthcareEntry
+  | HealthCheckEntry;
+
+Omit<Entry, 'id'>
+```
+but it wouldn't work as we might expect(opens in a new tab). In fact, the resulting type would only contain the common properties, but not the ones they don't share. A possible workaround is to define a special Omit-like function to deal with such situations:
+
+```js
+// Define special omit for unions
+type UnionOmit<T, K extends string | number | symbol> = T extends unknown ? Omit<T, K> : never;
+// Define Entry without the 'id' property
+type EntryWithoutId = UnionOmit<Entry, 'id'>;
+```
+
+https://github.com/microsoft/TypeScript/issues/42680
