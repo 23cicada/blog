@@ -41,3 +41,7 @@ pull_request:
   branches: [main]
   types: [opened, synchronize]
 ```
+
+Run deployment step only for the main branch: ensures that the deployment step is executed only when the code is being merged or pushed to the main branch.
+
+`if: ${{ github.event_name == 'push' }}`
