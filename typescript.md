@@ -1,40 +1,33 @@
-## Tips
-
-TypeScript error messages have the most useful information at the end of the message.
-
-- [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped)
-
 ## compilerOptions
 
-`noEmit: true`: Do not emit compiler output files like JavaScript source code, source-maps or declarations.
+`noEmit: true`: Do not emit compiler output files such as JavaScript source code, source maps, or declarations.
 
-`noImplicitAny: true`: TypeScript will issue an error whenever it would have inferred any.
+`noImplicitAny: true`: TypeScript will issue an error whenever it would have inferred `any`.
 
-In some cases where no type annotations are present, TypeScript will fall back to a type of any for a variable when it cannot infer the type.
+In some cases where no type annotations are present, TypeScript falls back to a type of `any` for a variable when it cannot infer the type.
 
 `allowImportingTsExtensions: true`: Allows TypeScript files to import each other with a TypeScript-specific extension like `.ts`, `.mts`, or `.tsx`. This flag is only allowed when `--noEmit` or `--emitDeclarationOnly` is enabled.
 
-`target: esnext`: Tells TypeScript should compile to the latest JavaScript features.
+`target: esnext`: Tells TypeScript to compile to the latest JavaScript features.
 
 `module: nodenext`: Tells TypeScript to use Node.js's native module resolution for ESM (ES Modules).
 
-`esModuleInterop: true`: Allows interoperability between CommonJS and ES Modules
+`esModuleInterop: true`: Allows interoperability between CommonJS and ES Modules.
 
-Without it: importing a CommonJS module requires `import * as express from 'express'`
-
-with it: `import express from 'express'`
+- Without it, importing a CommonJS module requires `import * as express from 'express'`.
+- With it, you can simply write `import express from 'express'`.
 
 ## `unknown`
 
-unknown is the type-safe counterpart of any. Anything is assignable to unknown, but unknown isn’t assignable to anything but itself and any without a **type assertion(类型断言)** or a control flow based **narrowing(类型收窄)**. Likewise, no operations are permitted on an unknown without first asserting or narrowing to a more specific type.
+`unknown` is the type-safe counterpart of `any`. Anything is assignable to `unknown`, but `unknown` isn't assignable to anything but itself and `any` without a **type assertion(类型断言)** or a control-flow-based **narrowing(类型收窄)**. Likewise, no operations are permitted on an `unknown` value without first asserting or narrowing it to a more specific type.
 
 ## [Narrowing](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
 
 **Discriminated unions**
 
-The specific technique of type narrowing where a union type is narrowed based on literal attribute value is called discriminated union.
+The technique of narrowing a union type based on a literal attribute value is called a discriminated union.
 
-```js
+```ts
 interface Shape {
   kind: "circle" | "square";
   radius?: number;
@@ -50,58 +43,82 @@ function getArea(shape: Shape) {
   }
 }
 ```
-[Exhaustiveness checking](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking)
 
 **Exhaustiveness checking**
 
-**type predicates**
+See [Exhaustiveness checking](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking) in the handbook.
 
-```js
+**Type predicates**
+
+```ts
 const isString = (text: unknown): text is string => {
   return typeof text === 'string' || text instanceof String;
 };
 ```
 
-**The operator `in`**
+**The `in` operator**
 
-```js
+```ts
 type Fish = { swim: () => void };
 type Bird = { fly: () => void };
- 
+
 function move(animal: Fish | Bird) {
   if ("swim" in animal) {
     return animal.swim();
   }
- 
+
   return animal.fly();
 }
 ```
 
 **`instanceof`**
 
-```js
+```ts
 try {
   // ...
 } catch (error: unknown) {
-  let errorMessage = 'Something went wrong: '
-  // here we can not use error.message
+  let errorMessage = 'Something went wrong: ';
+  // here we cannot use error.message
   if (error instanceof Error) {
-   // the type is narrowed and we can refer to error.message
+    // the type is narrowed, so we can refer to error.message
     errorMessage += error.message;
-}
-  // here we can not use error.message
+  }
   console.log(errorMessage);
 }
 ```
 
 ## const assertions
 
-- no literal types in that expression should be widened (e.g. no going from "hello" to string)
-- object literals get readonly properties
-- array literals become readonly tuples
+- No literal types in the expression are widened (e.g. no going from `"hello"` to `string`).
+- Object literals get `readonly` properties.
+- Array literals become `readonly` tuples.
 
+## `Omit` with unions
 
-## Nodejs
+An important point about unions: when you use `Omit` to exclude a property from a union, it may work in an unexpected way. Suppose we want to remove the `id` from each `Entry`. We might be tempted to write:
+
+```ts
+export type Entry =
+  | HospitalEntry
+  | OccupationalHealthcareEntry
+  | HealthCheckEntry;
+
+Omit<Entry, 'id'>
+```
+
+However, this doesn't work as we might expect. The resulting type would only contain the properties common to all members of the union, but not the ones they don't share. A workaround is to define a special `Omit`-like type that distributes over the union:
+
+```ts
+// Define a distributive Omit for unions
+type UnionOmit<T, K extends string | number | symbol> = T extends unknown ? Omit<T, K> : never;
+// Define Entry without the 'id' property
+type EntryWithoutId = UnionOmit<Entry, 'id'>;
+```
+
+See [microsoft/TypeScript#42680](https://github.com/microsoft/TypeScript/issues/42680).
+
+## Node.js
+
 ### Running TypeScript Natively
 
 - https://nodejs.org/learn/typescript/run-natively
@@ -113,26 +130,6 @@ try {
 
 ## Tips
 
-[use interface until you need to use features from type.](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#differences-between-type-aliases-and-interfaces)
-
-### Omit with unions
-
-An important point concerning unions is that, when you use them with Omit to exclude a property, it works in a possibly unexpected way. Suppose that we want to remove the id from each Entry. We could think of using
-```js
-export type Entry =
-  | HospitalEntry
-  | OccupationalHealthcareEntry
-  | HealthCheckEntry;
-
-Omit<Entry, 'id'>
-```
-but it wouldn't work as we might expect(opens in a new tab). In fact, the resulting type would only contain the common properties, but not the ones they don't share. A possible workaround is to define a special Omit-like function to deal with such situations:
-
-```js
-// Define special omit for unions
-type UnionOmit<T, K extends string | number | symbol> = T extends unknown ? Omit<T, K> : never;
-// Define Entry without the 'id' property
-type EntryWithoutId = UnionOmit<Entry, 'id'>;
-```
-
-https://github.com/microsoft/TypeScript/issues/42680
+- TypeScript error messages put the most useful information at the end of the message.
+- [Use `interface` until you need features from `type`.](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#differences-between-type-aliases-and-interfaces)
+- [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) — community-maintained type definitions for JavaScript libraries.
