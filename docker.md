@@ -283,3 +283,207 @@ services:
     volumes:
       - ./redis_data:/data
 ```
+
+# Basics of Container Orchestration
+
+## React in container
+
+```dockerfile
+  FROM node:24 AS build-stage
+
+  WORKDIR /usr/src/app
+
+  COPY . .
+
+  ENV VITE_BACKEND_URL=http://localhost:3000
+
+  RUN npm ci
+
+  RUN npm run build
+
+  FROM nginx:1.29-alpine
+
+  COPY --from=build-stage /usr/src/app/dist /usr/share/nginx/html
+```
+
+`docker build -t todo-frontend-image .`
+
+`docker run --name todo-frontend -d -p 8080:80 todo-frontend-image`
+
+Multi-stage builds:
+
+```dockerfile
+  FROM node:24 AS test-stage
+  WORKDIR /usr/src/app
+  COPY . .
+  ENV VITE_BACKEND_URL=http://localhost:3000
+  RUN npm ci
+  RUN npm run test
+
+  FROM node:24 AS build-stage
+  WORKDIR /usr/src/app
+  COPY --from=test-stage /usr/src/app /usr/src/app
+  RUN npm run build
+
+  FROM nginx:1.29-alpine
+  COPY --from=build-stage /usr/src/app/dist /usr/share/nginx/html
+```
+
+## Development in containers
+
+dev.Dockerfile
+
+```dockerfile
+FROM node:24
+WORKDIR /usr/src/app
+COPY . .
+# Change npm ci to npm install since we are going to be in development mode
+RUN npm install
+CMD ["npm", "run", "dev", "--", "--host"]
+```
+docker-compose.dev.yml
+
+```yaml
+services:
+  app:
+    image: todo-frontend-dev
+    build:
+      context: . # The context will pick this directory as the "build context"
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./:/usr/src/app # The path can be relative, so ./ is enough to say "the same location as the docker-compose.yml"
+      - /usr/src/app/node_modules # An anonymous volume that keeps the container's node_modules, so the bind mount above doesn't hide it with the host's.
+
+    ports:
+      - 5173:5173
+    container_name: todo-frontend-dev # This will name the container hello-front-dev
+```
+
+`docker compose -f docker-compose.dev.yml up`
+
+Install the new dependency inside the container:
+
+`docker exec todo-frontend-dev npm install axios`
+
+## Communication between containers in a Docker network
+
+```yaml
+services:
+  express-server:
+    environment:
+      MONGO_URL: mongodb://root:example@mongo:27017/the_database?authSource=admin
+      REDIS_URL: redis://redis:6379
+
+  mongo:
+    image: mongo
+    ports:
+      - 3456:27017
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+
+```
+
+ -[Networking in Compose  Compose](https://docs.docker.com/compose/how-tos/networking/)
+
+## Connect the services, todo-frontend with todo-backend
+
+nginx.dev.conf
+
+```nginx
+# events is required, but defaults are ok
+events { }
+
+# A http server, listening at port 80
+http {
+  server {
+    listen 80;
+
+    # Requests starting with root (/) are handled
+    location / {
+      # The following 3 lines are required for the hot reload to work
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection 'upgrade';
+
+      # Requests are directed to http://app:5173
+      proxy_pass http://app:5173;
+    }
+
+    location /api/ {
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection 'upgrade';
+
+      # Even though the browser will send a GET request to /api/todos/1 we want the Nginx to proxy the request to /todos/1. Do this by adding a trailing slash / to the URL at the end of proxy_pass.
+      proxy_pass http://server:3000/;
+    }
+  }
+}
+```
+
+docker-compose.dev.yml
+
+```yaml
+services:
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: the_database
+    volumes:
+      - ./todo-backend/mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+      - ./todo-backend/mongo_data:/data/db
+    container_name: mongo
+
+  redis:
+    image: redis
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - ./todo-backend/redis_data:/data
+    container_name: redis
+
+  server:
+    image: todo-backend-dev
+    build:
+      context: ./todo-backend
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./todo-backend:/usr/src/app
+      - /usr/src/app/node_modules
+
+    environment:
+      PORT: 3000
+      MONGO_URL: mongodb://root:example@mongo:27017/the_database?authSource=admin
+      REDIS_URL: redis://redis:6379
+    container_name: todo-backend-dev
+    depends_on:
+      - mongo
+      - redis
+
+  app:
+    image: todo-frontend-dev
+    build:
+      context: ./todo-frontend
+      dockerfile: dev.Dockerfile
+    environment:
+      VITE_BACKEND_URL: /api
+    volumes:
+      - ./todo-frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    container_name: todo-frontend-dev
+
+  nginx:
+    image: nginx:1.29
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 8080:80
+    container_name: reverse-proxy
+    depends_on:
+      - app
+      - server
+```
