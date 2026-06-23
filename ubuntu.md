@@ -26,6 +26,8 @@ ssh vmiss-hk
 
 - `man` (manual): check the man page for more details.
 
+- `reset`: reset command.
+
 # Creating folders and files
 
 `mkdir` (make directory)
@@ -157,9 +159,18 @@ rm file_list.txt
 ```shell
 sort combined.txt | uniq | wc -l
 ```
+# The command line and the superuser
+
+Don’t use the root account.
+
+Don’t use `su`.
+
+`sudo`: is used to prefix a command that has to be run with superuser privileges.
 
 # Miscellaneous
 
 Unix systems are case-sensitive.
 
 Good naming practice: keep file names all lower case, with only letters, numbers, underscores and hyphens.
+
+
