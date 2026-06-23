@@ -24,6 +24,8 @@ ssh vmiss-hk
 
   `cd ~` / `cd` switches to the **home directory**. Using `~` at the start of a path similarly means "starting from my home directory".
 
+- `man` (manual): check the man page for more details.
+
 # Creating folders and files
 
 `mkdir` (make directory)
@@ -128,6 +130,32 @@ rmdir folder_*
 
 # -p: also removes the parent directories
 rmdir -p dir1/dir2/dir3
+```
+
+# Plumbing 
+
+Plumbing takes the output of one command (its standard output, or STDOUT) and feeds it directly in as the input of another command (its standard input, or STDIN).
+
+`|`: the pipe character, which connects two commands
+
+`wc -l`: counts the lines
+
+```shell
+ls ~ | wc -l 
+```
+
+```shell
+ls ~ > file_list.txt
+wc -l file_list.txt
+rm file_list.txt
+```
+
+`uniq`: outputs only unique lines, and works only on adjacent **matching** lines.
+
+`sort`: sorts the lines, which puts matching lines next to each other so `uniq` can work.
+
+```shell
+sort combined.txt | uniq | wc -l
 ```
 
 # Miscellaneous
