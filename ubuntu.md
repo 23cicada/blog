@@ -1,34 +1,6 @@
-# SSH into the VPS
+# Beginner's Guide: The Linux command line
 
-.ssh/config
-
-```
-Host vmiss-hk
-HostName xxx.xxx.xx.xxx
-User root
-IdentityFile ~/.ssh/id_vmiss_hk
-ProxyCommand "C:\Program Files\Git\mingw64\bin\connect.exe" -S 127.0.0.1:7897 %h %p
-```
-
-```shell
-ssh vmiss-hk
-```
-
-# The Linux command line
-
-- `pwd` (print working directory)
-
-- `cd` (change directory)
-
-  `cd /` switches to the **root directory**. Using `/` at the start of a path means "starting from the root directory".
-
-  `cd ~` / `cd` switches to the **home directory**. Using `~` at the start of a path similarly means "starting from my home directory".
-
-- `man` (manual): check the man page for more details.
-
-- `reset`: reset command.
-
-# Creating folders and files
+Creating folders and files:
 
 `mkdir` (make directory)
 
@@ -39,20 +11,18 @@ mkdir -p dir4/dir5/dir6
 
 `ls` (list)
 
-## Creating files using redirection
+---
+
+Creating files using redirection:
 
 ```shell
 # >: captures the command's output into a text file
 ls > output.txt
 ```
 
-## Copy-pasting
+---
 
-`Ctrl Shift C`: copy
-
-`Ctrl Shift V`: paste
-
-## Adding text to a file
+Adding text to a file:
 
 `echo` (just prints its arguments back out again)
 
@@ -60,7 +30,9 @@ ls > output.txt
 echo "This is a test" > test_1.txt
 ```
 
-## Linking text together
+---
+
+Linking text together:
 
 `cat` (concatenate)
 
@@ -84,7 +56,9 @@ echo "I've appended a line!" >> combined.txt
 less combined.txt
 ```
 
-# Moving and manipulating files
+---
+
+Moving and manipulating files:
 
 `mv` (move)
 
@@ -112,7 +86,9 @@ cp dir4/dir5/dir6/combined.txt .
 cp combined.txt backup_combined.txt 
 ```
 
-## Deleting files and folders
+---
+
+Deleting files and folders:
 
 `rm` (remove)
 
@@ -134,7 +110,9 @@ rmdir folder_*
 rmdir -p dir1/dir2/dir3
 ```
 
-# Plumbing 
+---
+
+Plumbing
 
 Plumbing takes the output of one command (its standard output, or STDOUT) and feeds it directly in as the input of another command (its standard input, or STDIN).
 
@@ -159,18 +137,95 @@ rm file_list.txt
 ```shell
 sort combined.txt | uniq | wc -l
 ```
-# The command line and the superuser
+
+---
+
+The command line and the superuser
 
 Don’t use the root account.
 
 Don’t use `su`.
 
-`sudo`: is used to prefix a command that has to be run with superuser privileges.
+It is better to disable the root account entirely and, instead of allowing long-lived sessions with dangerous powers, require superuser rights to be requested on a per-command basis. The key to this approach is a command called `sudo` (as in "switch user and do this command").
 
-# Miscellaneous
+`sudo` (be careful with it): prefixes a command that has to be run with superuser privileges.
+
+---
+
+Installing software
+
+`apt` or `apt-get`
+
+```shell
+sudo apt install tree
+
+tree
+
+# .
+# ├── another
+# ├── dir1
+# ├── dir2
+# │   ├── dir3
+# │   ├── test_1.txt
+# │   ├── test_2.txt
+# │   └── test_3.txt
+# ├── dir4
+# │   └── dir5
+# │       └── dir6
+# ├── folder
+# └── output.txt
+
+# 9 directories, 4 files
+```
+
+---
+
+Hidden files
+
+Simply starting a name with a dot (`.`) is enough to make it hidden.
+
+`ls -a` (show all): shows everything in a directory, including hidden files and folders.
+
+---
+
+Copy-pasting
+
+`Ctrl Shift C`: copy
+
+`Ctrl Shift V`: paste
+
+
+---
+
+Command line
+
+- `pwd` (print working directory)
+
+- `cd` (change directory)
+
+  `cd /` switches to the **root directory**. Using `/` at the start of a path means "starting from the root directory".
+
+  `cd ~` / `cd` switches to the **home directory**. Using `~` at the start of a path similarly means "starting from my home directory".
+
+- `man` (manual): check the man page for more details.
+
+- `reset`: reset command.
+
+- `sudo su`: root shell.
+
+- `uname -m` machine hardware name (eg. x86_64)
+
+---
+
+Miscellaneous
 
 Unix systems are case-sensitive.
 
 Good naming practice: keep file names all lower case, with only letters, numbers, underscores and hyphens.
 
+---
+
+> [The Linux command line for beginners](https://ubuntu.com/desktop/docs/en/latest/tutorial/the-linux-command-line-for-beginners)
+>
+> [The Linux Command Line by William Shotts](https://billie66.github.io/TLCL/book/index.html)
 
