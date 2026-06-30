@@ -83,7 +83,7 @@ mv backup_combined.txt combined_backup.txt
 cp dir4/dir5/dir6/combined.txt .
 
 # give it a new file name
-cp combined.txt backup_combined.txt 
+cp combined.txt backup_combined.txt
 ```
 
 ---
@@ -121,7 +121,7 @@ Plumbing takes the output of one command (its standard output, or STDOUT) and fe
 `wc -l`: counts the lines
 
 ```shell
-ls ~ | wc -l 
+ls ~ | wc -l
 ```
 
 ```shell
@@ -194,7 +194,6 @@ Copy-pasting
 
 `Ctrl Shift V`: paste
 
-
 ---
 
 Command line
@@ -215,6 +214,10 @@ Command line
 
 - `uname -m` machine hardware name (eg. x86_64)
 
+- `> filename`: empty the contents of `filename` (or create it if missing).
+
+- `journalctl -u server_name -o cat -f`
+
 ---
 
 Miscellaneous
@@ -228,4 +231,3 @@ Good naming practice: keep file names all lower case, with only letters, numbers
 > [The Linux command line for beginners](https://ubuntu.com/desktop/docs/en/latest/tutorial/the-linux-command-line-for-beginners)
 >
 > [The Linux Command Line by William Shotts](https://billie66.github.io/TLCL/book/index.html)
-

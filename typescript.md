@@ -17,6 +17,15 @@ In some cases where no type annotations are present, TypeScript falls back to a 
 - Without it, importing a CommonJS module requires `import * as express from 'express'`.
 - With it, you can simply write `import express from 'express'`.
 
+`skipLibCheck: true`: Skip type checking of declaration files (`.d.ts`).
+
+`verbatimModuleSyntax: true`: Verbatim Module Syntax
+
+- import/export statements without the type keyword are always preserved and emitted as-is in ESM syntax.
+- only import/export statements with the type keyword are removed (elided).
+
+`rewriteRelativeImportExtensions: true`: Rewrite .ts, .tsx, .mts, and .cts file extensions in relative import paths to their JavaScript equivalent in output files.
+
 ## `unknown`
 
 `unknown` is the type-safe counterpart of `any`. Anything is assignable to `unknown`, but `unknown` isn't assignable to anything but itself and `any` without a **type assertion(类型断言)** or a control-flow-based **narrowing(类型收窄)**. Likewise, no operations are permitted on an `unknown` value without first asserting or narrowing it to a more specific type.
@@ -123,6 +132,7 @@ See [microsoft/TypeScript#42680](https://github.com/microsoft/TypeScript/issues/
 
 - https://nodejs.org/learn/typescript/run-natively
 - https://nodejs.org/docs/latest-v22.x/api/typescript.html#typescript-features
+- [File extendsions are mandatory](https://nodejs.org/docs/latest-v22.x/api/esm.html#mandatory-file-extensions)
 
 ## React
 
@@ -133,3 +143,6 @@ See [microsoft/TypeScript#42680](https://github.com/microsoft/TypeScript/issues/
 - TypeScript error messages put the most useful information at the end of the message.
 - [Use `interface` until you need features from `type`.](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#differences-between-type-aliases-and-interfaces)
 - [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) — community-maintained type definitions for JavaScript libraries.
+- $schema: https://json.schemastore.org/tsconfig
+
+    vs code setting: `"json.schemaDownload.enable": true`
